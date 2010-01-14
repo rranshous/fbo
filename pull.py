@@ -14,7 +14,7 @@ from weblog.rfc3339 import rfc3339
 
 TITLE = 'FBO.gov listing'
 DESCRIPTION = 'A feed for the opportunities on fbo.gov'
-ID = '1'
+VERSION = '1.1'
 URL = 'http://mypubliccode.com/fbo/fbo.atom'
 
 def strip_tags(s):
@@ -99,7 +99,7 @@ def update_atom(items):
     # we are going to re-generate the atom feed file from the items
     data = {
         'items':items,
-        'id':ID,
+        'id':VERSION,
         'title':TITLE,
         'description':DESCRIPTION,
         'updated_at':rfc3339(datetime.now()),
