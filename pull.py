@@ -4,7 +4,6 @@ from BeautifulSoup import BeautifulSoup as BS
 from urllib2 import urlopen
 import re
 from datetime import datetime
-from rfc3339 import rfc3339
 from urlparse import parse_qs,urljoin,urlsplit
 from mako.template import Template
 import pickle
