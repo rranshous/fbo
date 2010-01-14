@@ -59,7 +59,7 @@ def items_from_rows(rows):
         item = {'updated_at':now}
         item['data'] = row
         item['id'] = row.get('id','')
-        item['url'] = row.get('url','').replace('&','&amp;')
+        item['url'] = row.get('url','')
         item['title'] = row.get('Opportunity','')
         items.append(item)
     return items
@@ -107,7 +107,7 @@ def update_atom(items):
     from mako import exceptions
     try:
         template = Template(filename='atom.mako')
-        atom_string = template.render(**data)
+        atom_string = template.render(**data).replace('&','&amp;')
     except:
         print exceptions.text_error_template().render()
 
