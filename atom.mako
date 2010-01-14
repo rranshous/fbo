@@ -15,13 +15,17 @@
     <link href="${item.get('url','')}" />
     <title>${item.get('title','')}</title>
     <updated>${item.get('updated_at','')}</updated>
-    <content type="text/html">
-        <div>
-            % for k,v in item.get('data',{}).iteritems():
-            <b>${k}</b><br>${v}<br><br>
-            % endfor
-        </div>
+    <content type="text">
+        ${item_content(item)}
     </content>
 </entry>
 % endfor
 </feed>
+
+<%def name="item_content(item)">
+% for k,v in item.get('data',{}).iteritems():
+${k}:
+${v}
+
+% endfor
+</%def>

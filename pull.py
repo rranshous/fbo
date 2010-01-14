@@ -9,6 +9,8 @@ from urlparse import parse_qs,urljoin,urlsplit
 from mako.template import Template
 import pickle
 from urllib import quote_plus
+from weblog.html_to_xhtml import html_to_xhtml
+from weblog.rfc3339 import rfc3339
 
 TITLE = 'FBO.gov listing'
 DESCRIPTION = 'A feed for the opportunities on fbo.gov'
@@ -101,7 +103,8 @@ def update_atom(items):
         'title':TITLE,
         'description':DESCRIPTION,
         'updated_at':rfc3339(datetime.now()),
-        'url':URL
+        'url':URL,
+        'xhtmlify':html_to_xhtml
     }
 
     from mako import exceptions
