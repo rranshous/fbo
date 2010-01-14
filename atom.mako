@@ -11,17 +11,15 @@
 
 % for item in items:
 <entry>
-    <id>${item.get('id','')}</id>
+    <id>urn:uuid:${item.get('id','')}</id>
     <link href="${item.get('url','')}" />
     <title>${item.get('title','')}</title>
     <updated>${item.get('updated_at','')}</updated>
     <content type="text/html">
         <div>
-            <ul>
-                % for k,v in item.get('data',{}).iteritems():
-                <li><b>${k}</b><br><br>${v}<br><br></li>
-                % endfor
-            </ul>
+            % for k,v in item.get('data',{}).iteritems():
+            <b>${k}</b><br>${v}<br><br>
+            % endfor
         </div>
     </content>
 </entry>
