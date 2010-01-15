@@ -76,14 +76,15 @@ def append_archive(items):
         data = []
     
     # we probably have overlapping data, don't want that
+    unique_new = []
     for item in items:
         if item.get('id') not in [x.get('id') for x in data]:
-            data.insert(0,item)
+            unique_new.append(item)
 
     with file('archive.data','w') as fh:
-        pickle.dump(data,fh)
+        pickle.dump(data+unique_new,fh)
 
-    return data
+    return unique_new
 
 def read_feed_archive():
     # return back the list of items
@@ -94,7 +95,7 @@ def read_feed_archive():
         data = []
     return data
 
-def update_atom(items):
+def update_atom(items,file_path='fbo.atom'):
     # we are going to re-generate the atom feed file from the items
     data = {
         'items':items,
@@ -113,7 +114,7 @@ def update_atom(items):
     except:
         print exceptions.text_error_template().render()
 
-    with file('fbo.atom','w') as fh:
+    with file(file_path,'w') as fh:
         fh.write(atom_string)
 
     return True
