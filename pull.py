@@ -117,5 +117,5 @@ def update_atom(items,file_path='fbo.atom'):
     with file(file_path,'w') as fh:
         fh.write(atom_string)
 
-    return True
+    return atom_string
 
