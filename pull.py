@@ -8,8 +8,6 @@ from urlparse import parse_qs,urljoin,urlsplit
 from mako.template import Template
 import pickle
 from urllib import quote_plus
-from weblog.html_to_xhtml import html_to_xhtml
-from weblog.rfc3339 import rfc3339
 from django.utils.feedgenerator import Atom1Feed as _Atom1Feed
 from functools import partial
 from cStringIO import StringIO
