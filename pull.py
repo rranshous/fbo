@@ -10,11 +10,50 @@ import pickle
 from urllib import quote_plus
 from weblog.html_to_xhtml import html_to_xhtml
 from weblog.rfc3339 import rfc3339
+from django.utils.feedgenerator import Atom1Feed as _Atom1Feed
+from functools import partial
+from cStringIO import StringIO
 
-TITLE = 'FBO.gov listing'
-DESCRIPTION = 'A feed for the opportunities on fbo.gov'
-VERSION = '1.1'
-URL = 'http://mypubliccode.com/fbo/fbo.atom'
+ITEM_TITLE_TEMPLATE = "${data.get('Opportunity')}"
+ITEM_AUTHOR_NAME = ''
+ITEM_AUTHOR_EMAIL = ''
+ITEM_AUTHOR_LINK = ''
+ITEM_DESCRIPTION_TEMPLATE = """
+% for k,v in data.iteritems():
+${k}:
+${v}
+% endfor
+"""
+ITEM_COPYRIGHT = ''
+FEED_TITLE = 'unofficial FBO.gov Oppertunity listing'
+FEED_LINK = 'http://mypubliccode.com/fbo/fbo.atom'
+FEED_DESCRIPTION = ''
+FEED_AUTHOR_EMAIL = ''
+FEED_AUTHOR_NAME = ''
+FEED_AUTHOR_LINK = ''
+FEED_SUBTITLE = ''
+FEED_CATEGORIES = ''
+FEED_URL = 'http://mypubliccode.com/fbo/fbo.atom'
+FEED_COPYRIGHT = ''
+FEED_ID = ''
+FEED_TTL = ''
+URL = 'https://www.fbo.gov/index?mode=list&s=opportuniry'
+
+class EasyAtom1Feed(_Atom1Feed):
+    def add_item(self,**kwargs):
+        # add item on the feed makes u feed it the title link
+        # and description, this is annoying
+        title = kwargs.get('title')
+        link = kwargs.get('link')
+        description = kwargs.get('description')
+        del kwargs['link']
+        del kwargs['title']
+        del kwargs['description']
+        return _Atom1Feed.add_item(self,title,link,description,**kwargs)
+Atom1Feed = EasyAtom1Feed
+
+def render_template(s,d):
+    return Template(s).render(**d)
 
 def strip_tags(s):
     return re.sub(r'<[^>]*?>','',s)
@@ -22,8 +61,8 @@ def strip_tags(s):
 def concat_content(el):
     return ' '.join([unicode(x).strip() for x in el.contents])
 
-def get_rows(url):
-    url_info = urlsplit(url)
+def get_rows(url=None):
+    url_info = urlsplit(url or URL)
     action_url = "%s://%s%s" % (url_info.scheme,
                               url_info.netloc,
                               url_info.path)
@@ -48,20 +87,28 @@ def get_rows(url):
                 row['id'] = id
                 row['url'] = urljoin(action_url,link)
 
-            row[td_items[i]] = strip_tags(concat_content(data_el))
+            row[td_items[i]] = strip_tags(concat_content(data_el)).strip()
         rows.append(row)
     return rows
 
 def items_from_rows(rows):
     # items have a little more data to them
-    now = rfc3339(datetime.now())
+    now = datetime.now()
     items = []
     for row in rows:
-        item = {'updated_at':now}
-        item['data'] = row
-        item['id'] = row.get('id','')
-        item['url'] = row.get('url','')
-        item['title'] = row.get('Opportunity','')
+        item = {}
+        item['title'] = render_template(ITEM_TITLE_TEMPLATE,{'data':row})
+        item['link'] = row.get('url')
+        item['pubdate'] = now
+        item['author_name'] = ITEM_AUTHOR_NAME
+        item['author_email'] = ITEM_AUTHOR_EMAIL
+        item['author_link'] = ITEM_AUTHOR_LINK
+        item['unique_id'] = row.get('id')
+        item['description'] = render_template(ITEM_DESCRIPTION_TEMPLATE,
+                                              {'data':row})
+        #item['enclosure'] =
+        #item['categories'] = 
+        item['item_copyright'] = ITEM_COPYRIGHT
         items.append(item)
     return items
 
@@ -97,23 +144,33 @@ def read_feed_archive():
 
 def update_atom(items,file_path='fbo.atom'):
     # we are going to re-generate the atom feed file from the items
-    data = {
-        'items':items,
-        'id':VERSION,
-        'title':TITLE,
-        'description':DESCRIPTION,
-        'updated_at':rfc3339(datetime.now()),
-        'url':URL,
-        'xhtmlify':html_to_xhtml
+
+    # fields that the django feed obj expects for feed details
+    feed_data = {
+        'title':FEED_TITLE,
+        'link':FEED_LINK,
+        'description':FEED_DESCRIPTION,
+        'language':'EN-us',
+        'author_email':FEED_AUTHOR_EMAIL,
+        'author_name':FEED_AUTHOR_NAME,
+        'author_link':FEED_AUTHOR_LINK,
+        'subtitle':FEED_SUBTITLE,
+        'categories':FEED_CATEGORIES,
+        'feed_url':FEED_URL,
+        'feed_copyright':FEED_COPYRIGHT,
+        'id':FEED_ID,
+        'ttl':FEED_TTL
     }
 
-    from mako import exceptions
-    try:
-        template = Template(filename='atom.mako')
-        atom_string = template.render(**data).replace('&','&amp;')
-    except:
-        print exceptions.text_error_template().render()
+    # create our Atom feed and give it some items
+    feed = Atom1Feed(**feed_data)
+    for item in items:
+        feed.add_item(**item)
+    buffer = StringIO()
+    feed.write(buffer,'UTF-8')
+    atom_string = buffer.getvalue()
 
+    # write it out to the file
     with file(file_path,'w') as fh:
         fh.write(atom_string)
 
