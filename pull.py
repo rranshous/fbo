@@ -17,10 +17,13 @@ ITEM_AUTHOR_NAME = ''
 ITEM_AUTHOR_EMAIL = ''
 ITEM_AUTHOR_LINK = ''
 ITEM_DESCRIPTION_TEMPLATE = """
-% for k,v in data.iteritems():
-${k}:
-${v}
-% endfor
+<div>
+    <ul>
+    % for k,v in data.iteritems():
+    <li style="margin-bottom:1em"><b>${k}:</b><br/>${v}</li>
+    % endfor
+    </ul>
+</div>
 """
 ITEM_COPYRIGHT = ''
 FEED_TITLE = 'unofficial FBO.gov Oppertunity listing'
